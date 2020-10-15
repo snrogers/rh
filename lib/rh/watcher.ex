@@ -1,29 +1,27 @@
 defmodule RH.Watcher do
-  use Supervisor
+  use GenServer
   require Logger
 
   def start_link(opts) do
     GenServer.start_link(__MODULE__, opts)
   end
 
-  def init(args) do
+  def init(_args) do
     {:ok, watcher_pid} =
       FileSystem.start_link(
         dirs: [
-          "lib"
+          "lib/rh"
         ]
       )
 
-    {:ok, scraper_pid} = DynamicSupervisor.start_child(RH.ScraperSupervisor, RH.Scraper)
-
     FileSystem.subscribe(watcher_pid)
 
-    {:ok, %{watcher_pid: watcher_pid, scraper_pid: scraper_pid}}
+    {:ok, %{watcher_pid: watcher_pid}}
   end
 
   def handle_info(
         {:file_event, watcher_pid, {paths, events}},
-        %{watcher_pid: watcher_pid, scraper_pid: scraper_pid} = state
+        %{watcher_pid: watcher_pid} = state
       ) do
     case events do
       [:modified, :closed] ->
@@ -34,14 +32,13 @@ defmodule RH.Watcher do
 
         Logger.debug("--- ----------------")
 
-        :ok = DynamicSupervisor.terminate_child(RH.ScraperSupervisor, scraper_pid)
-
         Logger.debug("Recompiling...")
         IEx.Helpers.recompile()
 
-        {:ok, scraper_pid} = DynamicSupervisor.start_child(RH.ScraperSupervisor, RH.Scraper)
+        Logger.debug("Crashing this app...")
+        throw("Crash due to change")
 
-        {:noreply, %{watcher_pid: watcher_pid, scraper_pid: scraper_pid}}
+        {:noreply, %{watcher_pid: watcher_pid}}
 
       _ ->
         {:noreply, state}

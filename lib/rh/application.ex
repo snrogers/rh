@@ -12,6 +12,10 @@ defmodule RH.Application do
       RH.Repo,
       # Start the endpoint when the application starts
       RHWeb.Endpoint,
+      %{
+        id: "scrape_every_5_minutes",
+        start: {SchedEx, :run_every, [RH.Scraper, :scrape, [], "*/5 * * * *"]}
+      },
       {DynamicSupervisor, name: RH.ScraperSupervisor, strategy: :one_for_one},
       {RH.Watcher, name: RH.Watcher}
 
@@ -21,7 +25,7 @@ defmodule RH.Application do
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: RH.Supervisor]
+    opts = [strategy: :one_for_all, name: RH.Supervisor]
     Supervisor.start_link(children, opts)
   end
 

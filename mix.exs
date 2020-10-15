@@ -33,6 +33,7 @@ defmodule RH.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:distillery, "~> 2.1"},
       {:ecto_sql, "~> 3.0"},
       {:ex_aws, "~> 2.1"},
       {:floki, "~> 0.26.0"},
@@ -47,6 +48,7 @@ defmodule RH.MixProject do
       {:phoenix_pubsub, "~> 1.1"},
       {:plug_cowboy, "~> 2.0"},
       {:postgrex, ">= 0.0.0"},
+      {:sched_ex, "~> 1.0"},
       {:tesla, "~> 1.3.0"}
     ]
   end

@@ -13,7 +13,7 @@ defmodule RH.AWS do
 
     stringified_req_body = Jason.encode!(req_body)
 
-    response =
+    {:ok, response} =
       ExAws.Request.request(
         :post,
         "https://comprehend.us-east-1.amazonaws.com/",
@@ -26,8 +26,8 @@ defmodule RH.AWS do
         :comprehend
       )
 
-    Logger.debug("RESPONSE: " <> inspect(response))
+    body = Jason.decode!(response.body)
 
-    response
+    {body["Sentiment"], body["SentimentScore"]}
   end
 end

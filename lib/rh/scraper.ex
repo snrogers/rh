@@ -1,40 +1,7 @@
 defmodule RH.Scraper do
-  use Task
   require Logger
   require Floki
-
-  def start_link(opts) do
-    IO.write(to_string(opts))
-    Task.start_link(&poll/0)
-  end
-
-  def poll() do
-    receive do
-    after
-      0 ->
-        titles =
-          get_titles()
-          |> Enum.join("\n")
-
-        Logger.debug("TITLES:\n " <> titles)
-
-        RH.AWS.comprehend(titles)
-
-        poll(:delay)
-    end
-  end
-
-  def poll(:delay) do
-    receive do
-    after
-      300_000 ->
-        get_titles()
-        |> Enum.join("\n")
-        |> (&Logger.debug("TITLES:\n " <> &1)).()
-
-        poll(:delay)
-    end
-  end
+  alias RH.{Repo, HealthPoint}
 
   def get_titles do
     result =
@@ -55,5 +22,26 @@ defmodule RH.Scraper do
       end
 
     result
+  end
+
+  def scrape do
+    Logger.debug("Fetching titles...")
+    titles = get_titles() |> Enum.join("\n")
+
+    Logger.debug("Computing sentiment...")
+    {sentiment, sentiments} = RH.AWS.comprehend(titles)
+
+    Logger.debug("Saving sentiment...")
+    # TODO: Is there a cleaner syntax for this?
+    Repo.insert(%HealthPoint{
+      titles: titles,
+      sentiment: sentiment,
+      mixed: sentiments["Mixed"],
+      negative: sentiments["Negative"],
+      neutral: sentiments["Neutral"],
+      positive: sentiments["Positive"]
+    })
+
+    Logger.debug("Sentiments:\n" <> inspect(sentiments))
   end
 end

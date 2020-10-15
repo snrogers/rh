@@ -1,35 +1,63 @@
 <section class="phx-hero">
-  <h1><%= gettext "Welcome to %{name}!", name: "Phoenix" %></h1>
-  <p>A productive web framework that<br/>does not compromise speed or maintainability.</p>
+  <h1>Reddit Sentiment</h1>
 </section>
 
 <section class="row">
   <article class="column">
-    <h2>Resources</h2>
-    <ul>
-      <li>
-        <a href="https://hexdocs.pm/phoenix/overview.html">Guides &amp; Docs</a>
-      </li>
-      <li>
-        <a href="https://github.com/phoenixframework/phoenix">Source</a>
-      </li>
-      <li>
-        <a href="https://github.com/phoenixframework/phoenix/blob/v1.4/CHANGELOG.md">v1.4 Changelog</a>
-      </li>
-    </ul>
-  </article>
-  <article class="column">
-    <h2>Help</h2>
-    <ul>
-      <li>
-        <a href="https://elixirforum.com/c/phoenix-forum">Forum</a>
-      </li>
-      <li>
-        <a href="https://webchat.freenode.net/?channels=elixir-lang">#elixir-lang on Freenode IRC</a>
-      </li>
-      <li>
-        <a href="https://twitter.com/elixirphoenix">Twitter @elixirphoenix</a>
-      </li>
-    </ul>
+    <h2>Positive</h1>
+    <div id="positive"></div>
+
+    <br />
+
+    <h2>Neutral</h1>
+    <div id="neutral"></div>
+
+    <br />
+
+    <h2>Negative</h1>
+    <div id="negative"></div>
+
+    <br />
+
+    <h2>Mixed</h1>
+    <div id="mixed"></div>
   </article>
 </section>
+<script>
+  const hps = window.hps = R.sortBy(
+    R.prop("id"),
+    JSON.parse(<%= @health_points |> Jason.encode!() |> raw() %>),
+  );
+
+  const positive = {
+    labels: hps.map(R.prop("inserted_at")),
+    series: [
+      { data: hps.map(R.prop("positive")) }
+    ]
+  };
+
+  const negative = {
+    labels: hps.map(R.prop("inserted_at")),
+    series: [ { data: hps.map(R.prop("negative")) } ]
+  };
+
+  const neutral = {
+    labels: hps.map(R.prop("inserted_at")),
+    series: [ { data: hps.map(R.prop("neutral")) } ]
+  };
+
+  const mixed = {
+    labels: hps.map(R.prop("inserted_at")),
+    series: [ { data: hps.map(R.prop("mixed")) } ]
+  };
+
+  const opts = {
+    axisY: { low: 0, high:1 }
+  }
+
+  /* Initialize the chart with the above settings */
+  new Chartist.Line('#positive', positive, opts);
+  new Chartist.Line('#neutral', neutral, opts);
+  new Chartist.Line('#negative', negative, opts);
+  new Chartist.Line('#mixed', mixed, opts);
+</script>

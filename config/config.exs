@@ -11,12 +11,14 @@ use Mix.Config
 # AWS Config
 # ----------------------------------------------------------------- #
 config :ex_aws,
-  access_key_id: [{:system, "AWS_ACCESS_KEY_ID"}, :instance_role],
-  secret_access_key: [{:system, "AWS_SECRET_ACCESS_KEY"}, :instance_role]
+  access_key_id: [{:system, "RH_AWS_ACCESS_KEY_ID"}, :instance_role],
+  secret_access_key: [{:system, "RH_AWS_SECRET_ACCESS_KEY"}, :instance_role]
 
 # ----------------------------------------------------------------- #
 # Project Config
 # ----------------------------------------------------------------- #
+config :ecto, json_library: Jason
+
 config :rh,
   namespace: RH,
   ecto_repos: [RH.Repo]
@@ -24,7 +26,7 @@ config :rh,
 # Configures the endpoint
 config :rh, RHWeb.Endpoint,
   url: [host: "localhost"],
-  secret_key_base: "93KdumR2Cv8zLyyEL2PbDm0DNhx3cuTDHoNfDQN2maoC736GYOCLPGuNUN8TOvIw",
+  secret_key_base: "RH_SECRET_KEY_BASE",
   render_errors: [view: RHWeb.ErrorView, accepts: ~w(html json)],
   pubsub: [name: RH.PubSub, adapter: Phoenix.PubSub.PG2]
 
